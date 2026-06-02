@@ -11,13 +11,15 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "@tsconfig/svelte": "^5.0.8",
+    "pg": "^8.21.0",
     "svelte": "^5.55.5",
     "svelte-check": "^4.5.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.12"
   },
   "dependencies": {
-    "dotenv": "^17.4.2",
-    "pg": "^8.21.0"
+    "@supabase/supabase-js": "^2.106.2",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2"
   }
 }

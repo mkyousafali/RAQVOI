@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import AnnouncementBar from './components/AnnouncementBar.svelte';
   import Header from './components/Header.svelte';
   import Hero from './components/Hero.svelte';
@@ -6,17 +7,53 @@
   import ProductSection from './components/ProductSection.svelte';
   import BenefitsStrip from './components/BenefitsStrip.svelte';
   import CollectionSection from './components/CollectionSection.svelte';
+  import AdminPanel from './components/admin/AdminPanel.svelte';
+  import { restoreSession } from './lib/adminStore';
+
+  let currentPage = 'home';
+
+  function checkRoute() {
+    const path = window.location.pathname;
+    console.log('Current path:', path);
+    if (path.includes('/admin')) {
+      currentPage = 'admin';
+    } else {
+      currentPage = 'home';
+    }
+  }
+
+  onMount(() => {
+    restoreSession();
+    
+    // Check route on initial load
+    checkRoute();
+    
+    // Listen for popstate (back/forward buttons)
+    window.addEventListener('popstate', checkRoute);
+    
+    // Also check route periodically for direct navigation
+    const interval = setInterval(checkRoute, 500);
+
+    return () => {
+      window.removeEventListener('popstate', checkRoute);
+      clearInterval(interval);
+    };
+  });
 </script>
 
-<main>
-  <AnnouncementBar />
-  <Header />
-  <Hero />
-  <CategorySection />
-  <ProductSection />
-  <BenefitsStrip />
-  <CollectionSection />
-</main>
+{#if currentPage === 'admin'}
+  <AdminPanel />
+{:else}
+  <main>
+    <AnnouncementBar />
+    <Header />
+    <Hero />
+    <CategorySection />
+    <ProductSection />
+    <BenefitsStrip />
+    <CollectionSection />
+  </main>
+{/if}
 
 <style>
   :global(*) {
