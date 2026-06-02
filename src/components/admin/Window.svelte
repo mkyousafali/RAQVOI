@@ -4,6 +4,7 @@
   import type { Window as AppWindow } from '../../lib/windowStore';
   import AdminUsersWindow from './windows/AdminUsersWindow.svelte';
   import DashboardWindow from './windows/DashboardWindow.svelte';
+  import ProductManagerWindow from './windows/ProductManagerWindow.svelte';
 
   export let windowData: AppWindow;
 
@@ -108,6 +109,8 @@
       <DashboardWindow />
     {:else if windowData.component === 'admin-users'}
       <AdminUsersWindow />
+    {:else if windowData.component === 'product-manager'}
+      <ProductManagerWindow />
     {/if}
   </div>
 
