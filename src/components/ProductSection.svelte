@@ -1,5 +1,34 @@
 <script lang="ts">
-  import { products } from '../lib/data';
+  import { onMount } from 'svelte';
+  import { products as staticProducts } from '../lib/data';
+  import { getProducts, type Product } from '../lib/productUtils';
+
+  let products: Product[] = [];
+  let loading = true;
+
+  onMount(async () => {
+    try {
+      const dbProducts = await getProducts();
+      // Use database products, fallback to static data if empty
+      if (dbProducts.length > 0) {
+        products = dbProducts.slice(0, 8); // Show first 8 products
+      } else {
+        // Fallback to static data - convert to Product type
+        products = staticProducts.slice(0, 8) as any;
+      }
+    } catch (err) {
+      console.error('Error loading products:', err);
+      // Fallback to static data
+      products = staticProducts.slice(0, 8) as any;
+    } finally {
+      loading = false;
+    }
+  });
+
+  function getProductImage(product: Product): string {
+    // Use database image if available, otherwise use placeholder
+    return product.image_url || '/static/placeholder-product.jpg';
+  }
 </script>
 
 <section class="products-section">
@@ -9,51 +38,64 @@
     <a href="#all" class="view-all">VIEW ALL</a>
   </div>
 
-  <div class="desktop-grid">
-    {#each products as product}
-      <div class="product-card">
-        {#if product.isNew}
-          <div class="new-badge">NEW</div>
-        {/if}
-        <button class="wishlist-btn" title="Add to wishlist">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-          </svg>
-        </button>
-        <div class="product-image">
-          <img src={product.image} alt={product.name} />
+  {#if loading}
+    <div class="loading-state">
+      <p>Loading products...</p>
+    </div>
+  {:else}
+    <div class="desktop-grid">
+      {#each products as product}
+        <div class="product-card">
+          {#if product.is_new}
+            <div class="new-badge">NEW</div>
+          {/if}
+          <button class="wishlist-btn" title="Add to wishlist">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+          </button>
+          <div class="product-image">
+            <img src={getProductImage(product)} alt={product.name} loading="lazy" />
+          </div>
+          <h3 class="product-name">{product.name}</h3>
+          <p class="product-price">₹{product.price.toLocaleString('en-IN')}</p>
         </div>
-        <h3 class="product-name">{product.name}</h3>
-        <p class="product-price">₹{product.price.toLocaleString('en-IN')}</p>
-      </div>
-    {/each}
-  </div>
+      {/each}
+    </div>
 
-  <div class="mobile-scroll">
-    {#each products as product}
-      <div class="product-card-mobile">
-        {#if product.isNew}
-          <div class="new-badge">NEW</div>
-        {/if}
-        <button class="wishlist-btn" title="Add to wishlist">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-          </svg>
-        </button>
-        <div class="product-image">
-          <img src={product.image} alt={product.name} />
+    <div class="mobile-scroll">
+      {#each products as product}
+        <div class="product-card-mobile">
+          {#if product.is_new}
+            <div class="new-badge">NEW</div>
+          {/if}
+          <button class="wishlist-btn" title="Add to wishlist">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+          </button>
+          <div class="product-image">
+            <img src={getProductImage(product)} alt={product.name} loading="lazy" />
+          </div>
+          <h3 class="product-name">{product.name}</h3>
+          <p class="product-price">₹{product.price.toLocaleString('en-IN')}</p>
         </div>
-        <h3 class="product-name">{product.name}</h3>
-        <p class="product-price">₹{product.price.toLocaleString('en-IN')}</p>
-      </div>
-    {/each}
-  </div>
+      {/each}
+    </div>
+  {/if}
 </section>
 
 <style>
   .products-section {
     padding: 60px 20px;
     background-color: #ffffff;
+  }
+
+  .loading-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+    font-size: 14px;
   }
 
   .products-header {

@@ -1,16 +1,23 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
+  import { createProduct, updateProduct, type Category, type Collection } from '../../../lib/productUtils';
+  import { uploadImage, deleteImage } from '../../../lib/storageUtils';
 
   const dispatch = createEventDispatcher();
 
   export let editingProduct: any = null;
-  export let categories: any[] = [];
+  export let categories: Category[] = [];
+  export let collections: Collection[] = [];
 
   let name = '';
-  let category = '';
+  let categoryId = '';
+  let collectionId = '';
   let price = '';
   let imageUrl = '';
   let imageFile: File | null = null;
+  let description = '';
+  let isNew = false;
+  let stockQuantity = '0';
   let error = '';
   let loading = false;
   let isEditing = false;
@@ -19,11 +26,16 @@
     if (editingProduct) {
       isEditing = true;
       name = editingProduct.name;
-      category = editingProduct.category;
+      categoryId = editingProduct.category_id;
+      collectionId = editingProduct.collection_id || '';
       price = editingProduct.price.toString();
-      imageUrl = editingProduct.image;
+      imageUrl = editingProduct.image_url || '';
+      description = editingProduct.description || '';
+      isNew = editingProduct.is_new || false;
+      stockQuantity = editingProduct.stock_quantity?.toString() || '0';
     } else {
-      category = categories[0]?.name || '';
+      categoryId = categories[0]?.id || '';
+      collectionId = collections[0]?.id || '';
     }
   });
 
@@ -47,7 +59,7 @@
       return;
     }
 
-    if (!category) {
+    if (!categoryId) {
       error = 'Category is required';
       return;
     }
@@ -65,22 +77,40 @@
     loading = true;
 
     try {
-      // For now, we'll just validate the form
-      // In a real app, you'd upload to Supabase Storage and create a products table entry
-      console.log('Product data:', {
-        name,
-        category,
-        price: parseFloat(price),
-        image: imageUrl,
-        isEditing,
-      });
+      let finalImageUrl = imageUrl;
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Upload image if a new file was selected
+      if (imageFile) {
+        finalImageUrl = await uploadImage(imageFile, 'product-images', 'products');
+      }
+
+      const productData = {
+        name: name.trim(),
+        category_id: categoryId,
+        collection_id: collectionId || null,
+        price: parseFloat(price),
+        image_url: finalImageUrl,
+        description: description.trim() || null,
+        is_new: isNew,
+        stock_quantity: parseInt(stockQuantity) || 0,
+        is_active: true,
+      };
+
+      if (isEditing) {
+        await updateProduct(editingProduct.id, productData);
+        console.log('✅ Product updated:', editingProduct.id);
+      } else {
+        const result = await createProduct({
+          ...productData,
+          is_active: true,
+        } as any);
+        console.log('✅ Product created:', result.id);
+      }
 
       dispatch('success');
     } catch (err) {
       error = err instanceof Error ? err.message : 'Error saving product';
+      console.error('Error saving product:', err);
     } finally {
       loading = false;
     }
@@ -111,16 +141,32 @@
           <label for="category">Category *</label>
           <select
             id="category"
-            bind:value={category}
+            bind:value={categoryId}
             disabled={loading}
           >
             <option value="">-- Select Category --</option>
             {#each categories as cat}
-              <option value={cat.name}>{cat.name}</option>
+              <option value={cat.id}>{cat.name}</option>
             {/each}
           </select>
         </div>
 
+        <div class="form-group">
+          <label for="collection">Collection</label>
+          <select
+            id="collection"
+            bind:value={collectionId}
+            disabled={loading}
+          >
+            <option value="">-- Select Collection (Optional) --</option>
+            {#each collections as col}
+              <option value={col.id}>{col.name}</option>
+            {/each}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
         <div class="form-group">
           <label for="price">Price (₹) *</label>
           <input
@@ -132,6 +178,42 @@
             step="0.01"
             disabled={loading}
           />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          bind:value={description}
+          placeholder="Enter product description (optional)"
+          disabled={loading}
+          rows="3"
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="stock">Stock Quantity</label>
+          <input
+            id="stock"
+            type="number"
+            bind:value={stockQuantity}
+            placeholder="0"
+            min="0"
+            disabled={loading}
+          />
+        </div>
+
+        <div class="checkbox-group">
+          <label>
+            <input
+              type="checkbox"
+              bind:checked={isNew}
+              disabled={loading}
+            />
+            <span>Mark as New</span>
+          </label>
         </div>
       </div>
 
@@ -151,6 +233,15 @@
           <p class="help-text">
             {imageUrl ? 'Click to change image' : 'Select product image'}
           </p>
+          <div class="image-guidelines">
+            <p><strong>📐 Recommended Size:</strong></p>
+            <ul>
+              <li>Mobile: 400×500px (vertical format)</li>
+              <li>Desktop: 500×600px (vertical format)</li>
+              <li>Max file size: 5MB</li>
+              <li>Formats: JPG, PNG, WebP</li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -265,17 +356,60 @@
     box-sizing: border-box;
   }
 
+  textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: var(--sans);
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    resize: vertical;
+  }
+
   input:focus,
-  select:focus {
+  select:focus,
+  textarea:focus {
     outline: none;
     border-color: var(--primary-gold);
     box-shadow: 0 0 0 3px rgba(180, 153, 104, 0.1);
   }
 
   input:disabled,
-  select:disabled {
+  select:disabled,
+  textarea:disabled {
     background: #f5f5f5;
     cursor: not-allowed;
+  }
+
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+  }
+
+  .checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: normal;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  .checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .checkbox-group span {
+    color: var(--primary-black);
   }
 
   .image-upload {
@@ -311,6 +445,33 @@
     margin: 8px 0 0 0;
     font-size: 12px;
     color: #999;
+  }
+
+  .image-guidelines {
+    margin-top: 12px;
+    padding: 12px;
+    background: #f0f7ff;
+    border-left: 3px solid #2196F3;
+    border-radius: 3px;
+  }
+
+  .image-guidelines p {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary-black);
+  }
+
+  .image-guidelines ul {
+    margin: 0;
+    padding-left: 20px;
+    list-style: disc;
+  }
+
+  .image-guidelines li {
+    font-size: 11px;
+    color: #555;
+    margin-bottom: 4px;
   }
 
   .error-message {

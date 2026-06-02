@@ -1,22 +1,55 @@
 <script lang="ts">
-  import { collections } from '../lib/data';
+  import { onMount } from 'svelte';
+  import { getCollections, type Collection } from '../lib/productUtils';
+
+  let collections: Collection[] = [];
+  let loading = true;
+  let error = '';
+
+  onMount(async () => {
+    try {
+      loading = true;
+      collections = await getCollections();
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Error loading collections';
+      console.error('Error loading collections:', err);
+    } finally {
+      loading = false;
+    }
+  });
 </script>
 
 <section class="collection-section">
   <h2 class="section-title">SHOP BY COLLECTION</h2>
 
-  <div class="collection-grid">
-    {#each collections as collection}
-      <a href="#" class="collection-card">
-        <div class="collection-image">
-          <img src={collection.image} alt={collection.name} />
-          <div class="collection-overlay">
-            <span class="collection-label">{collection.name}</span>
+  {#if loading}
+    <div class="loading">Loading collections...</div>
+  {:else if error}
+    <div class="error-state">
+      <p>❌ {error}</p>
+    </div>
+  {:else if collections.length === 0}
+    <div class="empty-state">
+      <p>No collections available</p>
+    </div>
+  {:else}
+    <div class="collection-grid">
+      {#each collections as collection}
+        <a href="#" class="collection-card">
+          <div class="collection-image">
+            {#if collection.image_url}
+              <img src={collection.image_url} alt={collection.name} />
+            {:else}
+              <div class="placeholder">No Image</div>
+            {/if}
+            <div class="collection-overlay">
+              <span class="collection-label">{collection.name}</span>
+            </div>
           </div>
-        </div>
-      </a>
-    {/each}
-  </div>
+        </a>
+      {/each}
+    </div>
+  {/if}
 </section>
 
 <style>
@@ -34,6 +67,39 @@
     margin: 0 0 40px;
     font-family: 'Playfair Display', serif;
     text-transform: uppercase;
+  }
+
+  .loading,
+  .error-state,
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-size: 16px;
+  }
+
+  .error-state {
+    color: #c33;
+    background: #fee;
+    border: 1px solid #f99;
+    border-radius: 4px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .error-state p {
+    margin: 0;
+  }
+
+  .placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f0f0;
+    color: #999;
+    font-size: 14px;
   }
 
   .collection-grid {

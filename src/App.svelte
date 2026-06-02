@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import AnnouncementBar from './components/AnnouncementBar.svelte';
   import Header from './components/Header.svelte';
-  import Hero from './components/Hero.svelte';
+  import HeroSection from './components/HeroSection.svelte';
   import CategorySection from './components/CategorySection.svelte';
   import ProductSection from './components/ProductSection.svelte';
   import BenefitsStrip from './components/BenefitsStrip.svelte';
@@ -14,7 +14,6 @@
 
   function checkRoute() {
     const path = window.location.pathname;
-    console.log('Current path:', path);
     if (path.includes('/admin')) {
       currentPage = 'admin';
     } else {
@@ -47,7 +46,7 @@
   <main>
     <AnnouncementBar />
     <Header />
-    <Hero />
+    <HeroSection />
     <CategorySection />
     <ProductSection />
     <BenefitsStrip />

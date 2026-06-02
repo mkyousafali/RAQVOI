@@ -1,46 +1,99 @@
 <script lang="ts">
-  import { categories } from '../lib/data';
+  import { onMount } from 'svelte';
+  import { categories as staticCategories } from '../lib/data';
+  import { getCategories, type Category } from '../lib/productUtils';
+
+  let categories: Category[] = [];
+  let loading = true;
+
+  onMount(async () => {
+    try {
+      const dbCategories = await getCategories();
+      if (dbCategories.length > 0) {
+        categories = dbCategories;
+      } else {
+        // Fallback to static data
+        categories = staticCategories.map(cat => ({
+          id: cat.name.toLowerCase(),
+          name: cat.name,
+          description: '',
+          image_url: cat.image,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })) as Category[];
+      }
+    } catch (err) {
+      console.error('Error loading categories:', err);
+      // Fallback to static data
+      categories = staticCategories.map(cat => ({
+        id: cat.name.toLowerCase(),
+        name: cat.name,
+        description: '',
+        image_url: cat.image,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })) as Category[];
+    } finally {
+      loading = false;
+    }
+  });
+
+  function getCategoryImage(category: Category): string {
+    return category.image_url || '/static/placeholder-category.jpg';
+  }
 </script>
 
 <section class="category-section">
   <div class="category-container">
-    <div class="desktop-categories">
-      {#each categories as category}
-        <a href={category.href} class="category-card">
-          <div class="category-image">
-            <img src={category.image} alt={category.name} />
-            <div class="category-overlay">
-              <span class="shop-link">Shop Now</span>
+    {#if loading}
+      <div class="loading-state">Loading categories...</div>
+    {:else}
+      <div class="desktop-categories">
+        {#each categories as category}
+          <a href={`/category/${category.id}`} class="category-card">
+            <div class="category-image">
+              <img src={getCategoryImage(category)} alt={category.name} />
+              <div class="category-overlay">
+                <span class="shop-link">Shop Now</span>
+              </div>
             </div>
-          </div>
-          <h3 class="category-name">{category.name}</h3>
-        </a>
-      {/each}
-    </div>
+            <h3 class="category-name">{category.name}</h3>
+          </a>
+        {/each}
+      </div>
 
-    <div class="mobile-categories">
-      {#each categories as category}
-        <a href={category.href} class="mobile-category">
-          <div class="mobile-category-image">
-            <img src={category.image} alt={category.name} />
-          </div>
-          <p class="mobile-category-name">{category.name}</p>
-          <span class="mobile-shop-link">Shop Now</span>
-        </a>
-      {/each}
-    </div>
+      <div class="mobile-categories">
+        {#each categories as category}
+          <a href={`/category/${category.id}`} class="mobile-category">
+            <div class="mobile-category-image">
+              <img src={getCategoryImage(category)} alt={category.name} />
+            </div>
+            <p class="mobile-category-name">{category.name}</p>
+            <span class="mobile-shop-link">Shop Now</span>
+          </a>
+        {/each}
+      </div>
+    {/if}
   </div>
 </section>
 
 <style>
   .category-section {
-    padding: 40px 20px;
+    padding: 40px 0;
     background-color: #ffffff;
   }
 
   .category-container {
     max-width: 1400px;
     margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .loading-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+    font-size: 14px;
   }
 
   .desktop-categories {
@@ -116,9 +169,14 @@
     display: flex;
     gap: 12px;
     overflow-x: auto;
-    padding: 8px 0;
+    overflow-y: hidden;
+    padding: 12px;
+    margin: 0 -20px;
+    padding-left: calc(20px + 12px);
+    padding-right: calc(20px + 12px);
     scrollbar-width: none;
     -ms-overflow-style: none;
+    scroll-behavior: smooth;
   }
 
   .mobile-categories::-webkit-scrollbar {
@@ -132,7 +190,7 @@
     gap: 8px;
     text-decoration: none;
     flex: 0 0 auto;
-    min-width: 80px;
+    min-width: 90px;
   }
 
   .mobile-category-image {
@@ -168,6 +226,10 @@
   @media (min-width: 768px) {
     .category-section {
       padding: 60px 40px;
+    }
+
+    .category-container {
+      padding: 0;
     }
 
     .desktop-categories {

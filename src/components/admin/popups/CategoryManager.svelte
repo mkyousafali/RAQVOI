@@ -1,16 +1,20 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
+  import { createCategory, updateCategory, deleteCategory, type Category } from '../../../lib/productUtils';
+  import { uploadImage } from '../../../lib/storageUtils';
 
   const dispatch = createEventDispatcher();
 
-  export let categories: any[] = [];
+  export let categories: Category[] = [];
 
   let categoryName = '';
+  let categoryDescription = '';
   let categoryImage = '';
   let categoryImageFile: File | null = null;
   let error = '';
   let loading = false;
   let showAddForm = false;
+  let editingCategory: Category | null = null;
   let localCategories = [...categories];
 
   function handleImageChange(e: Event) {
@@ -25,58 +29,106 @@
     }
   }
 
-  async function handleAddCategory() {
+  function resetForm() {
+    categoryName = '';
+    categoryDescription = '';
+    categoryImage = '';
+    categoryImageFile = null;
+    editingCategory = null;
     error = '';
+  }
+
+  function startEdit(category: Category) {
+    console.log('✏️ Edit category clicked:', category.id);
+    editingCategory = category;
+    categoryName = category.name;
+    categoryDescription = category.description || '';
+    categoryImage = category.image_url || '';
+    showAddForm = true;
+  }
+
+  async function handleSaveCategory() {
+    error = '';
+    const isEdit = !!editingCategory;
+    console.log(isEdit ? '✏️ Update category:' : '➕ Add category:', categoryName);
 
     if (!categoryName.trim()) {
       error = 'Category name is required';
+      console.warn('Category name is empty');
       return;
     }
 
-    if (!categoryImage) {
-      error = 'Category image is required';
+    if (!categoryImage && !isEdit) {
+      error = 'Category image is required for new categories';
+      console.warn('Category image not provided');
       return;
     }
 
     loading = true;
 
     try {
-      // Add new category to local list
-      const newCategory = {
-        id: localCategories.length + 1,
-        name: categoryName.toUpperCase(),
-        image: categoryImage,
-      };
+      // Upload image if a new file was selected
+      let imageUrl = categoryImage;
+      if (categoryImageFile) {
+        console.log('Uploading image...');
+        imageUrl = await uploadImage(categoryImageFile, 'category-images', 'categories');
+        console.log('Image uploaded:', imageUrl);
+      }
 
-      localCategories = [...localCategories, newCategory];
+      if (isEdit && editingCategory) {
+        // Update existing category
+        console.log('Updating category in database...');
+        const updated = await updateCategory(editingCategory.id, {
+          name: categoryName.toUpperCase(),
+          description: categoryDescription || null,
+          image_url: imageUrl,
+        });
+        
+        localCategories = localCategories.map(c => c.id === updated.id ? updated : c);
+        console.log('✅ Category updated:', updated.id);
+      } else {
+        // Create new category
+        console.log('Creating category in database...');
+        const newCategory = await createCategory({
+          name: categoryName.toUpperCase(),
+          description: categoryDescription || null,
+          image_url: imageUrl,
+        });
 
-      // Reset form
-      categoryName = '';
-      categoryImage = '';
-      categoryImageFile = null;
+        localCategories = [...localCategories, newCategory];
+        console.log('✅ Category added:', newCategory.id);
+      }
+
+      resetForm();
       showAddForm = false;
-
-      console.log('Category added:', newCategory);
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Error adding category';
+      error = err instanceof Error ? err.message : 'Error saving category';
+      console.error('❌ Error saving category:', err);
     } finally {
       loading = false;
     }
   }
 
-  async function handleDeleteCategory(id: number) {
-    if (!confirm('Delete this category?')) {
+  async function handleDeleteCategory(id: string) {
+    console.log('🗑️ Delete category clicked:', id);
+    if (!confirm('Delete this category? This action cannot be undone.')) {
+      console.log('Delete cancelled');
       return;
     }
 
     try {
+      console.log('Deleting category from database...');
+      await deleteCategory(id);
       localCategories = localCategories.filter(c => c.id !== id);
+      console.log('✅ Category deleted:', id);
     } catch (err) {
-      console.error('Error deleting category:', err);
+      error = err instanceof Error ? err.message : 'Error deleting category';
+      console.error('❌ Error deleting category:', err);
     }
   }
 
-  function handleSaveCategories() {
+  function handleSaveChanges() {
+    console.log('💾 Save all categories clicked');
     dispatch('success');
   }
 </script>
@@ -89,38 +141,72 @@
     </div>
 
     <div class="modal-content">
-      <div class="categories-list">
-        <h3>Current Categories</h3>
-        {#if localCategories.length === 0}
-          <p class="empty">No categories yet</p>
-        {:else}
-          <div class="category-grid">
-            {#each localCategories as category (category.id)}
-              <div class="category-card">
-                <img src={category.image} alt={category.name} />
-                <h4>{category.name}</h4>
-                <button
-                  class="btn-delete-category"
-                  on:click={() => handleDeleteCategory(category.id)}
-                  title="Delete"
-                >
-                  ✕
-                </button>
-              </div>
-            {/each}
+      <div class="categories-section">
+        {#if !editingCategory}
+          <div class="section-header">
+            <h3>All Categories</h3>
+            <button class="btn-add-new" on:click={() => { resetForm(); showAddForm = true; }} disabled={loading}>
+              + Add New Category
+            </button>
+          </div>
+
+          {#if localCategories.length === 0}
+            <p class="empty">No categories yet</p>
+          {:else}
+            <div class="table-wrapper">
+              <table class="categories-table">
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>Category Name</th>
+                  <th>Description</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {#each localCategories as category (category.id)}
+                  <tr>
+                    <td class="image-cell">
+                      {#if category.image_url}
+                        <img src={category.image_url} alt={category.name} />
+                      {:else}
+                        <span class="no-image">—</span>
+                      {/if}
+                    </td>
+                    <td class="name-cell">{category.name}</td>
+                    <td class="description-cell">{category.description || '—'}</td>
+                    <td class="actions-cell">
+                      <button class="btn-edit" on:click={() => startEdit(category)} disabled={loading}>
+                        Edit
+                      </button>
+                      <button class="btn-delete" on:click={() => handleDeleteCategory(category.id)} disabled={loading}>
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
           </div>
         {/if}
-
-        {#if !showAddForm}
-          <button class="btn-add-category" on:click={() => showAddForm = true}>
-            + Add Category
-          </button>
         {/if}
       </div>
 
       {#if showAddForm}
-        <div class="add-category-form">
-          <h3>Add New Category</h3>
+        <div class="add-category-form" class:editing={editingCategory}>
+          <div class="form-title-bar">
+            <div class="form-title-content">
+              {#if editingCategory}
+                <button class="btn-back" on:click={() => { editingCategory = null; showAddForm = false; resetForm(); }} disabled={loading}>
+                  ← Back to Categories
+                </button>
+              {/if}
+              <h3>{editingCategory ? '✏️ Edit Category' : '➕ Add New Category'}</h3>
+              {#if editingCategory}
+                <span class="editing-badge">{editingCategory.name}</span>
+              {/if}
+            </div>
+          </div>
 
           <div class="form-group">
             <label for="cat-name">Category Name *</label>
@@ -135,7 +221,18 @@
           </div>
 
           <div class="form-group">
-            <label for="cat-image">Category Image *</label>
+            <label for="cat-description">Description</label>
+            <textarea
+              id="cat-description"
+              bind:value={categoryDescription}
+              placeholder="Category description (optional)"
+              disabled={loading}
+              rows="2"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="cat-image">Category Image {editingCategory ? '(optional)' : '*'}</label>
             <div class="image-upload">
               {#if categoryImage}
                 <img src={categoryImage} alt={categoryName} class="preview" />
@@ -161,12 +258,7 @@
             <button
               type="button"
               class="btn-cancel"
-              on:click={() => {
-                showAddForm = false;
-                categoryName = '';
-                categoryImage = '';
-                error = '';
-              }}
+              on:click={() => { showAddForm = false; resetForm(); }}
               disabled={loading}
             >
               Cancel
@@ -174,10 +266,10 @@
             <button
               type="button"
               class="btn-submit"
-              on:click={handleAddCategory}
+              on:click={handleSaveCategory}
               disabled={loading}
             >
-              {loading ? 'Adding...' : 'Add Category'}
+              {loading ? (editingCategory ? 'Updating...' : 'Adding...') : (editingCategory ? 'Update Category' : 'Add Category')}
             </button>
           </div>
         </div>
@@ -188,7 +280,7 @@
       <button type="button" class="btn-cancel" on:click={() => dispatch('close')}>
         Close
       </button>
-      <button type="button" class="btn-save" on:click={handleSaveCategories}>
+      <button type="button" class="btn-save" on:click={handleSaveChanges}>
         Save Changes
       </button>
     </div>
@@ -210,7 +302,8 @@
   }
 
   .modal {
-    background: var(--white);
+    background: #ffffff !important;
+    border: 4px solid var(--primary-gold);
     border-radius: 8px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     max-width: 600px;
@@ -226,7 +319,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 2px solid var(--primary-gold);
+    background: #ffffff;
   }
 
   .modal-header h2 {
@@ -259,6 +353,7 @@
     flex: 1;
     overflow-y: auto;
     padding: 20px;
+    background: #ffffff;
   }
 
   .categories-list h3 {
@@ -269,103 +364,229 @@
     color: var(--primary-black);
   }
 
-  .empty {
-    color: #999;
-    text-align: center;
-    padding: 20px;
+  .categories-section {
+    margin-bottom: 20px;
+    background: #ffffff;
+    border-radius: 4px;
   }
 
-  .category-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 12px;
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 16px;
   }
 
-  .category-card {
-    position: relative;
-    border: 1px solid #eee;
+  .section-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--primary-black);
+  }
+
+  .btn-add-new {
+    padding: 8px 12px;
+    background: #4CAF50;
+    color: white;
+    border: none;
     border-radius: 4px;
-    overflow: hidden;
     cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
     transition: all 0.2s ease;
   }
 
-  .category-card:hover {
-    border-color: var(--primary-gold);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  .btn-add-new:hover:not(:disabled) {
+    background: #45a049;
   }
 
-  .category-card img {
+  .btn-add-new:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .table-wrapper {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+    background: #ffffff;
+  }
+
+  .categories-table {
     width: 100%;
-    height: 100px;
-    object-fit: cover;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: #ffffff;
   }
 
-  .category-card h4 {
-    margin: 8px;
-    font-size: 12px;
+  .categories-table thead {
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .categories-table th {
+    padding: 12px 16px;
+    text-align: left;
     font-weight: 600;
     color: var(--primary-black);
+  }
+
+  .categories-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .categories-table tbody tr:hover {
+    background: #fafafa;
+  }
+
+  .image-cell {
+    width: 60px;
+    text-align: center;
+  }
+
+  .image-cell img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 3px;
+  }
+
+  .no-image {
+    color: #999;
+  }
+
+  .name-cell {
+    font-weight: 600;
+    color: var(--primary-black);
+  }
+
+  .description-cell {
+    color: #666;
+    max-width: 200px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .btn-delete-category {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    background: rgba(244, 67, 54, 0.9);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 14px;
+  .actions-cell {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s ease;
+    gap: 8px;
+    white-space: nowrap;
   }
 
-  .category-card:hover .btn-delete-category {
-    opacity: 1;
-  }
-
-  .btn-add-category {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    margin-top: 12px;
-    border: 2px dashed var(--primary-gold);
-    background: transparent;
-    color: var(--primary-gold);
-    border-radius: 4px;
+  .btn-edit,
+  .btn-delete {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    background: white;
     cursor: pointer;
+    border-radius: 3px;
+    font-size: 12px;
     font-weight: 600;
     transition: all 0.2s ease;
   }
 
-  .btn-add-category:hover {
-    background: rgba(212, 175, 55, 0.05);
+  .btn-edit {
+    color: #2196F3;
+    border-color: #2196F3;
   }
+
+  .btn-edit:hover:not(:disabled) {
+    background: rgba(33, 150, 243, 0.1);
+  }
+
+  .btn-delete {
+    color: #f44336;
+    border-color: #f44336;
+  }
+
+  .btn-delete:hover:not(:disabled) {
+    background: rgba(244, 67, 54, 0.1);
+  }
+
+  .btn-edit:disabled,
+  .btn-delete:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Old grid styles removed - now using table layout */
 
   .add-category-form {
     margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
+    padding: 16px;
+    border-top: 2px solid var(--primary-gold);
+    background: #ffffff;
+    border-radius: 4px;
+  }
+
+  .add-category-form.editing {
+    background: rgba(212, 175, 55, 0.05);
+    border-left: 4px solid var(--primary-gold);
+  }
+
+  .form-title-bar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  }
+
+  .form-title-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .btn-back {
+    padding: 6px 12px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .btn-back:hover:not(:disabled) {
+    background: #f5f5f5;
+    border-color: #999;
+    color: var(--primary-black);
+  }
+
+  .btn-back:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   .add-category-form h3 {
-    margin: 0 0 12px 0;
+    margin: 0;
     font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
     color: var(--primary-black);
+  }
+
+  .editing-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: var(--primary-gold);
+    color: var(--primary-black);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
   }
 
   .form-group {
@@ -393,15 +614,35 @@
     box-sizing: border-box;
   }
 
-  input:focus {
+  textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: var(--sans);
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    resize: vertical;
+  }
+
+  input:focus,
+  textarea:focus {
     outline: none;
     border-color: var(--primary-gold);
     box-shadow: 0 0 0 3px rgba(180, 153, 104, 0.1);
   }
 
-  input:disabled {
+  input:disabled,
+  textarea:disabled {
     background: #f5f5f5;
     cursor: not-allowed;
+  }
+
+  .empty {
+    color: #999;
+    text-align: center;
+    padding: 20px;
   }
 
   .image-upload {
@@ -461,8 +702,8 @@
     gap: 12px;
     justify-content: flex-end;
     padding: 16px 20px;
-    border-top: 1px solid #eee;
-    background: #f9f9f9;
+    border-top: 2px solid var(--primary-gold);
+    background: #ffffff;
   }
 
   .btn-cancel,

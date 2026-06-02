@@ -37,6 +37,7 @@ docs/
 database/*.js
 database/*.mjs
 database/node_modules/
+scripts/
 
 # Database files
 *.db
