@@ -1,0 +1,103 @@
+/* RAQVOI - Luxury Fashion Brand CSS */
+
+:root {
+  /* Colors */
+  --primary-black: #1a1a1a;
+  --primary-white: #ffffff;
+  --primary-gold: #b89968;
+  --light-gold: #d4af37;
+  --light-bg: #f5f1ed;
+  --light-gray: #f0f0f0;
+  --medium-gray: #666;
+  --dark-gray: #333;
+  --border-color: #e5e4e7;
+
+  /* Typography */
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --serif: 'Playfair Display', serif;
+
+  /* Sizing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 40px;
+  --spacing-3xl: 60px;
+
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--sans);
+  background-color: var(--primary-white);
+  color: var(--primary-black);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--serif);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-gold);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-black);
+}
+
+/* Selection */
+::selection {
+  background-color: var(--primary-gold);
+  color: var(--primary-black);
+}
+
+::-moz-selection {
+  background-color: var(--primary-gold);
+  color: var(--primary-black);
+}
+
+#app {
+  width: 100%;
+}

@@ -1,0 +1,54 @@
+{
+  "name": "RAQVOI - Luxury Fashion",
+  "short_name": "RAQVOI",
+  "description": "Luxury women fashion e-commerce with timeless elegance",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#1a1a1a",
+  "categories": ["shopping"],
+  "screenshots": [
+    {
+      "src": "https://images.unsplash.com/photo-1595607774223-ef52624120d2?w=540&h=720&fit=crop",
+      "sizes": "540x720",
+      "type": "image/jpeg",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1595607774223-ef52624120d2?w=1280&h=720&fit=crop",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Arrivals",
+      "short_name": "New",
+      "description": "Browse new arrivals",
+      "url": "/?view=new",
+      "icons": [
+        {
+          "src": "https://images.unsplash.com/photo-1595607774223-ef52624120d2?w=192&h=192&fit=crop",
+          "sizes": "192x192",
+          "type": "image/jpeg"
+        }
+      ]
+    },
+    {
+      "name": "Sale",
+      "short_name": "Sale",
+      "description": "View sale items",
+      "url": "/?view=sale",
+      "icons": [
+        {
+          "src": "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=192&h=192&fit=crop",
+          "sizes": "192x192",
+          "type": "image/jpeg"
+        }
+      ]
+    }
+  ]
+}
