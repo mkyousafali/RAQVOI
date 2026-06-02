@@ -33,6 +33,11 @@ dist-ssr
 # Documentation (Local reference only)
 docs/
 
+# Database scripts and utilities (keep supabase/migrations/ committed)
+database/*.js
+database/*.mjs
+database/node_modules/
+
 # Database files
 *.db
 *.sqlite
