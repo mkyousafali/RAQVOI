@@ -61,7 +61,7 @@ Keep the gate enabled during development. Do not replace the frontend Caddy rout
 
 ## Update the preview gate
 
-Copy `deployment/access-gate/server.mjs` to its server path, then:
+Copy both `deployment/access-gate/server.mjs` and `deployment/access-gate/coming-soon.mjs` to `/opt/raqvoi/access-gate/`. The gate imports its coming-soon template module. Before deploying this version, add a read-only Compose mount for `/opt/raqvoi/access-gate/coming-soon.mjs:/app/coming-soon.mjs:ro` alongside the existing server mount, and recreate `preview-gate` with `docker compose up -d --force-recreate --wait preview-gate`. For later updates with unchanged mounts:
 
 ```sh
 cd /opt/raqvoi/supabase
@@ -69,7 +69,7 @@ docker compose restart preview-gate
 docker compose ps
 ```
 
-The service uses `node:22-alpine`, a non-root user, read-only mounts/filesystem and dropped capabilities. Its private `gate.env` contains `ACCESS_CODE_SHA256` and a random `SESSION_SECRET`. Never publish the access code or its hash; a six-digit code hash can be brute-forced offline. Code validation happens on the server. Successful access sets a signed Secure/HttpOnly/SameSite cookie for 12 hours. Failed attempts are limited per IP, and unauthorized visitors cannot load application assets. Rate limits are held in process memory and reset on restart. Trust forwarded client IPs only from the controlled reverse proxy; never expose the gate directly.
+The service uses `node:22-alpine`, a non-root user, read-only mounts/filesystem and dropped capabilities. Its private `gate.env` contains `ACCESS_CODE_SHA256` and a random `SESSION_SECRET`. Never publish the access code or its hash; a six-digit code hash can be brute-forced offline. Code validation happens on the server. Successful access sets a signed Secure/HttpOnly/SameSite browser-session cookie without Max-Age or Expires. Normal browser shutdown ends access; session-restore settings may preserve session cookies. The server also enforces a 12-hour maximum lifetime. Previously issued persistent preview cookies are no longer accepted. Failed attempts are limited per IP, and unauthorized visitors cannot load application assets. Rate limits are held in process memory and reset on restart. Trust forwarded client IPs only from the controlled reverse proxy; never expose the gate directly.
 
 Rotate the code and session secret server-side when needed, then recreate the service to reload its environment. Rotating the session secret invalidates existing sessions. Do not include secret values in command output, shell history or this guide.
 
@@ -98,3 +98,15 @@ Do not print expanded Compose configuration: it contains credentials. Inspect lo
 ## Publish to GitHub
 
 Review `git status`, staged filenames and the exact diff. Use an established secret scanner where available and check for private keys, JWTs, API tokens, connection URLs, passwords and numeric preview codes without echoing any matches into shared output. Confirm `AGENTS.md`, `.env` and private credential files are ignored and untracked. Commit only reviewed source and this sanitized guide. Never force-push to hide a leak; rotate secrets first and coordinate any required history rewrite.
+
+## PWA and brand assets
+
+Original user-provided artwork lives in root `static/`. Web-ready wordmark/icon files are in `source/public/assets/brand/`; favicon, touch and install icons are in `source/public/icons/`. Keep original artwork unchanged when updating derivatives.
+
+`source/public/manifest.webmanifest` defines standalone installation. The footer offers installation or browser-specific instructions. `source/public/sw.js` is deliberately network-only: it never caches app pages, images, API responses or credentials. Its offline screen contains no protected app content. Retain this behavior while preview access is required; offline caching must not bypass session expiration.
+
+The gate allows anonymous GETs only for the manifest, service worker, two coming-soon brand PNGs and generated floral WebP and explicitly listed app icon files, allowing browser/OS installation metadata fetches. All application pages, bundles, product images remain gated; the two brand PNGs and floral decoration used on the coming-soon screen are intentionally public. Add any new public metadata file explicitly after reviewing its contents. Static production serving must return `application/manifest+json` for the manifest.
+
+Verify locally with `node tests/pwa.test.mjs` from `source/`, supplying `RAQVOI_PREVIEW_CODE` in the process environment and optionally `RAQVOI_URL`/`RAQVOI_CHROME`. This checks actual Chromium installability in a temporary normal profile, brand loading, mobile overflow, worker control, session expiration and safe offline behavior. Do not commit the preview code or the temporary browser profile. Browser-managed installation itself is a user action.
+
+The coming-soon page hides the access form until the wordmark button is clicked five times (keyboard activation works too). This is a presentation choice, not authentication; code validation and session authorization remain server-side. Wrong-code responses reveal the form for retry. The small reveal script is authorized by an exact CSP hash, without unsafe-inline JavaScript.
