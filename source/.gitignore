@@ -1,0 +1,6 @@
+node_modules/
+dist/
+tests/artifacts/
+*.tar.gz
+.env
+.env.*
