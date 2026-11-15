@@ -1,0 +1,26 @@
+# Local instructions and credentials
+/AGENTS.md
+.env
+.env.*
+!.env.example
+!.env.sample
+*.env
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+*token*.txt
+*credentials*.json
+*service-account*.json
+
+# Dependencies, builds, logs and private backups
+node_modules/
+dist/
+*.log
+*.sql.gz
+*.dump
+*.backup
+*.tar.gz
+*.before-gate*

@@ -1,5 +1,7 @@
 # RAQVOI static store demo
 
+Deployment, preview access protection and security requirements: [deployment guide](deployment/README.md).
+
 Svelte 5 + TypeScript + Vite. Global CSS, reusable UI components, dedicated page components and browser-local stores are separate files. Prices use INR and product displays contain no people.
 
 ## Open the finished website
