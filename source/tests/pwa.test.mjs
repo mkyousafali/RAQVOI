@@ -13,6 +13,7 @@ const context = await chromium.launchPersistentContext(profile, {
   headless: true,
   viewport: { width: 1440, height: 1000 },
 });
+context.setDefaultTimeout(Number(process.env.RAQVOI_TIMEOUT_MS || 30000));
 try {
   const page = await context.newPage();
   const errors = [];
