@@ -25,6 +25,13 @@ saves a protected database backup and recreates only the changed services.
 Run public checks and mark the release verified before running retention cleanup.
 No database migrations are performed by this frontend release runner.
 
+For layout/image-interaction updates only, use `deploy-frontend.py COMMIT` with
+the reviewed build staged as `/opt/raqvoi/preview-staging/frontend.tar.gz`.
+It captures the immediately current rollback and replaces the static frontend,
+then recreates only the gate to refresh its bind mount. Gate secrets, preview
+code, API configuration and sessions are preserved. Run the live zoom/layout
+browser checks before marking the release verified and pruning older releases.
+
 ## Customer authentication backend (16 November 2026; historical rollout)
 
 The live backend now includes email OTP authentication and `public.customer_profiles`,

@@ -24,7 +24,10 @@ section.product-editorial .main-product-image img {
   transform: scale(var(--zoom-level, 1));
   transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%);
 }
-section.product-editorial .main-product-image.zoomed { cursor: crosshair; touch-action: none; }
+section.product-editorial .main-product-image.zoomed { cursor: grab; touch-action: none; user-select: none; }
+section.product-editorial .main-product-image.zoomed.panning { cursor: grabbing; }
+section.product-editorial .main-product-image img,
+section.product-editorial .main-product-image > span { pointer-events: none; user-select: none; -webkit-user-drag: none; }
 section.product-editorial .main-product-image.zoomed img { transition: none; }
 .product-editorial .image-zoom-controls {
   display: flex; align-items: center; justify-content: center; gap: 9px;
@@ -199,4 +202,52 @@ section.product-editorial .main-product-image.zoomed img { transition: none; }
   .product-editorial .main-product-image img,
   .product-editorial .size-selector button,
   .product-editorial .add-to-bag { transition: none; }
+}
+
+/* Fit the garment and buying controls into a normal desktop viewport. */
+@media(min-width:801px) {
+  .product-detail.product-editorial {
+    width:100%;
+    max-width:1440px;
+    margin-inline:auto;
+    grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);
+    gap:32px;
+    padding:8px 28px 24px;
+  }
+  .product-editorial .product-gallery {
+    width:min(100%,max(250px,calc((100dvh - 260px) * .78)));
+    max-width:590px;
+    margin-inline:auto;
+  }
+  .product-editorial .main-product-image { border-width:5px; border-radius:13px; }
+  .product-editorial .main-product-image img { object-fit:contain; }
+  .product-editorial .image-zoom-controls { margin-top:8px; gap:7px; }
+  .product-editorial .image-zoom-controls button { min-width:32px; height:32px; }
+  .product-editorial .gallery-note { padding:8px 0 0; font-size:7px; }
+  .product-editorial .main-product-image > span { left:10px; right:10px; bottom:10px; padding:7px; font-size:9px; }
+  .product-editorial .product-info {
+    margin-top:0;
+    padding:20px 24px;
+    max-height:calc(100dvh - 196px);
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    scrollbar-width:thin;
+    border-radius:14px;
+  }
+  .product-editorial .product-info h1 { max-width:none; margin:10px 0 14px; font-size:clamp(32px,2.5vw,42px); line-height:1.02; }
+  .product-editorial .detail-price { font-size:20px; gap:9px; }
+  .product-editorial .tax-note { margin:6px 0 12px; }
+  .product-editorial .product-description { margin-bottom:12px; font-size:12px; line-height:1.6; }
+  .product-editorial .selection-label { margin:12px 0 8px; font-size:11px; }
+  .product-editorial .product-colour { gap:10px; padding:5px 10px; }
+  .product-editorial .product-colour > span { width:20px; height:20px; }
+  .product-editorial .size-selector button { width:44px; height:34px; }
+  .product-editorial .product-purchase { margin-top:14px; }
+  .product-editorial .product-purchase .quantity-control,
+  .product-editorial .product-purchase .add-to-bag,
+  .product-editorial .product-purchase .outline-heart { min-height:42px; height:42px; }
+  .product-editorial .product-purchase .add-to-bag { padding-top:10px; padding-bottom:10px; }
+  .product-editorial .product-perks { gap:7px; padding:12px 0; margin-bottom:6px; }
+  .product-editorial .product-perks span { padding:8px; font-size:9px; }
+  .product-editorial details { padding:9px 0; }
 }

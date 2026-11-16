@@ -160,3 +160,41 @@
 @media (prefers-reduced-motion: reduce) {
   .hero .button.dark, .category-card { transition: none; }
 }
+
+/* Compact desktop proportions at normal browser zoom. */
+@media (min-width:801px) {
+  .hero {
+    width:100%;
+    max-width:1440px;
+    margin-inline:auto;
+    min-height:0;
+    height:clamp(390px,calc(100svh - 350px),560px);
+  }
+  .hero-copy { padding:30px clamp(28px,4vw,64px); }
+  .hero h1 { margin:18px 0; font-size:clamp(48px,4.2vw,72px); }
+  .hero-copy > p { margin-bottom:18px; font-size:13px; line-height:1.55; }
+  .hero .button.dark { padding:13px 20px; }
+  .hero-footnote { margin-top:24px; font-size:7px; }
+  .hero-copy::after { width:90px; }
+  .hero-photo { min-height:0; margin:12px 16px 12px 0; }
+  .hero-image-label { left:16px; right:16px; bottom:16px; padding:10px 12px; }
+  .hero-image-label a { font-size:18px; }
+  .image-index { top:22px; right:28px; }
+  .benefit-strip { padding-top:12px; padding-bottom:12px; }
+  #main-content > .section {
+    max-width:1440px;
+    margin-inline:auto;
+    padding:34px 28px 40px;
+  }
+  .section-heading { margin-bottom:20px; }
+  .section-heading h2 { margin-top:8px; font-size:34px; }
+  .category-grid { gap:16px; }
+  .category-card { aspect-ratio:1.16; }
+  .category-card > div { left:12px; right:12px; bottom:12px; padding:11px; }
+  .category-card h3 { font-size:27px; }
+  .category-card > div > span { font-size:8px; }
+  .home-products { grid-template-columns:repeat(4,minmax(0,1fr)); gap:20px; }
+  #main-content > .offer-banner,
+  #main-content > .editorial-section { max-width:1440px; margin-inline:auto; }
+  .editorial-section > img { max-height:480px; object-fit:cover; }
+}

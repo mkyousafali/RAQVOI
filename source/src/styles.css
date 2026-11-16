@@ -61,3 +61,7 @@
 @media(max-width:800px){.announcement{height:32px;padding-top:0;padding-bottom:0}.mobile-filter-bar{top:96px}}
 /* Use a familiar Indian rupee glyph for prices while keeping the store typography. */
 .price,.detail-price,.cart-line-price,.order-reference{font-family:'Segoe UI','Nirmala UI',Arial,sans-serif}
+
+/* Keep storefront images from growing to fill an ever-wider CSS viewport
+   when the browser zooms out. Normal desktop and mobile widths stay fluid. */
+#main-content:not(.admin-route){width:100%;max-width:1920px;margin-inline:auto}

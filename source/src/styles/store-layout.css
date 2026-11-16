@@ -1,0 +1,86 @@
+/* Storefront proportions at 100% browser zoom; Admin uses its own layout. */
+@media (min-width:801px) {
+  #main-content:not(.admin-route) > :is(.section,.page-heading,.shop-layout,.bag-layout,.checkout-layout,.help-layout,.account-layout,.story-hero,.editorial-section,.offer-banner) {
+    width:100%;
+    max-width:1440px;
+    margin-inline:auto;
+  }
+  #main-content:not(.admin-route) > .page-heading {
+    padding:24px 28px;
+  }
+  #main-content:not(.admin-route) > .page-heading h1 {
+    margin:10px 0;
+    font-size:44px;
+    line-height:1.08;
+  }
+  #main-content:not(.admin-route) > .page-heading.compact h1 { font-size:38px; }
+  #main-content:not(.admin-route) > .page-heading > p { font-size:12px; }
+  #main-content:not(.admin-route) > .section { padding:30px 28px 40px; }
+  #main-content:not(.admin-route) > .section.no-top { padding-top:8px; }
+  #main-content:not(.admin-route) .empty-state { padding:48px 24px; }
+  #main-content:not(.admin-route) .empty-state h1 { font-size:40px; }
+
+  #main-content:not(.admin-route) section.shop-page.shop-layout {
+    grid-template-columns:210px minmax(0,1fr);
+    gap:24px;
+    padding:0 24px 36px;
+  }
+  #main-content:not(.admin-route) .shop-products {
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:20px 16px;
+  }
+  #main-content:not(.admin-route) .product-card h3 { font-size:21px; line-height:1.15; }
+  #main-content:not(.admin-route) .product-card .price { margin-top:8px; font-size:12px; }
+  #main-content:not(.admin-route) .product-meta { margin-top:10px; font-size:9px; }
+  #main-content:not(.admin-route) .product-photo { aspect-ratio:.82; }
+  #main-content:not(.admin-route) section.shop-page.shop-layout > .filters {
+    padding:13px 14px;
+    max-height:calc(100dvh - 140px);
+  }
+  #main-content:not(.admin-route) .filters fieldset { padding:10px 0; }
+  #main-content:not(.admin-route) .filters .filter-search { margin-bottom:10px; }
+  #main-content:not(.admin-route) .filters .radio-label { margin-block:5px; }
+
+  #main-content:not(.admin-route) > :is(.bag-layout,.checkout-layout,.help-layout,.account-layout) {
+    gap:28px;
+    padding:8px 28px 36px;
+  }
+  #main-content:not(.admin-route) .order-summary { padding:22px; }
+  #main-content:not(.admin-route) .order-summary h2 { margin-bottom:18px; font-size:27px; }
+  #main-content:not(.admin-route) .cart-item { gap:16px; padding-block:16px; }
+  #main-content:not(.admin-route) .cart-item img { width:90px; height:120px; object-fit:cover; }
+  #main-content:not(.admin-route) .offers-grid { gap:18px; }
+  #main-content:not(.admin-route) .offer-card { padding:25px; }
+  #main-content:not(.admin-route) .help-content h2 { font-size:32px; }
+  #main-content:not(.admin-route) .help-layout > nav { gap:15px; font-size:12px; }
+  #main-content:not(.admin-route) .story-hero > div { padding:36px 48px; }
+  #main-content:not(.admin-route) .story-hero h1 { margin:16px 0; font-size:50px; }
+  #main-content:not(.admin-route) .story-hero > img {
+    height:clamp(360px,calc(100svh - 220px),520px);
+    object-fit:cover;
+  }
+  #main-content:not(.admin-route) .story-manifesto { padding:40px 25px; }
+  #main-content:not(.admin-route) .story-manifesto h2 { font-size:34px; }
+  #main-content:not(.admin-route) .order-success { padding:28px 28px 40px; }
+  #main-content:not(.admin-route) .order-success h1 { font-size:40px; }
+  #main-content:not(.admin-route) .order-reference { margin:22px 0; padding:18px; gap:12px; }
+
+  #main-content:not(.admin-route) .customer-account:not(.profile-mode) {
+    max-width:540px;
+    margin:18px auto 40px;
+    padding:24px;
+  }
+  #main-content:not(.admin-route) .customer-account.profile-mode { margin-top:12px; margin-bottom:40px; }
+  #main-content:not(.admin-route) .profile-sidebar { padding:22px; }
+  #main-content:not(.admin-route) .profile-avatar { width:52px; height:52px; margin-bottom:12px; font-size:30px; }
+  #main-content:not(.admin-route) .profile-identity { padding:4px 8px 16px; }
+  #main-content:not(.admin-route) .profile-identity h2 { margin-top:12px; font-size:28px; }
+  #main-content:not(.admin-route) .profile-facts { padding:15px 0; }
+  #main-content:not(.admin-route) .profile-edit { padding:24px; }
+  #main-content:not(.admin-route) .profile-edit-heading { margin-bottom:18px; padding-bottom:15px; }
+  #main-content:not(.admin-route) .profile-edit-heading h2 { font-size:34px; }
+}
+
+@media (min-width:1200px) {
+  #main-content:not(.admin-route) .shop-products { grid-template-columns:repeat(4,minmax(0,1fr)); }
+}
