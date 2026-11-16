@@ -8,6 +8,7 @@ const root = '/srv/site';
 // Local preview may proxy Vite; production always uses secure cookies/static files.
 const upstream = process.env.PREVIEW_UPSTREAM ? new URL(process.env.PREVIEW_UPSTREAM) : null;
 const localPreview = process.env.LOCAL_PREVIEW === 'true';
+const apiUpstream = new URL('http://customer-api:5180');
 if (upstream && (!localPreview || upstream.protocol !== 'http:' || upstream.hostname !== '127.0.0.1')) throw new Error('Preview upstream must be local');
 const secret = process.env.SESSION_SECRET;
 const codeHash = process.env.ACCESS_CODE_SHA256;
@@ -62,9 +63,18 @@ const server = http.createServer(async (req, res) => {
       return res.end();
     }
     const publicPreviewAsset = req.method === 'GET' && ['/assets/brand/coming-soon-florals.webp', '/assets/brand/logo.png', '/assets/brand/icon.png', '/manifest.webmanifest', '/sw.js', '/icons/icon-32-transparent.png', '/icons/icon-180-transparent.png', '/icons/icon-192-transparent.png', '/icons/icon-512-transparent.png', '/icons/icon-maskable-512.png'].includes(req.url);
-    if (!authenticated(req) && !publicPreviewAsset) { req.resume(); return gate(res, req.url === '/' && req.method === 'GET' ? 200 : 401); }
-    if (upstream) {
-      const proxy = http.request(upstream, {path:req.url, method:req.method, headers:{...req.headers, host:upstream.host}}, response => {
+    const pathnameForAPI = new URL(req.url, 'http://internal').pathname;
+    const apiRequest = pathnameForAPI.startsWith('/api/customer/') || pathnameForAPI.startsWith('/api/admin/');
+    // OAuth returns from an external provider without the Strict preview cookie.
+    // This narrow callback still requires the API's single-use browser-bound flow.
+    const oauthCallback = apiRequest && req.method === 'GET' && pathnameForAPI === '/api/customer/oauth/callback';
+    if (!authenticated(req) && !publicPreviewAsset && !oauthCallback) { req.resume(); return gate(res, req.url === '/' && req.method === 'GET' ? 200 : 401); }
+    const target = upstream || (apiRequest ? apiUpstream : null);
+    if (target) {
+      const headers = {...req.headers, host:target.host};
+      delete headers['x-raqvoi-client-ip'];
+      if (!localPreview) headers['x-raqvoi-client-ip'] = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress).split(',')[0].trim();
+      const proxy = http.request(target, {path:req.url, method:req.method, headers}, response => {
         res.writeHead(response.statusCode, {...response.headers, 'cache-control':'private, no-store'});
         response.pipe(res);
       });

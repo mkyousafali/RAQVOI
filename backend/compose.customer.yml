@@ -1,0 +1,27 @@
+services:
+  customer-api:
+    build: /opt/raqvoi/customer-api
+    restart: unless-stopped
+    env_file: /opt/raqvoi/customer-api/api.env
+    ports:
+      - "127.0.0.1:5180:5180"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 192m
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:5180/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+  auth:
+    environment:
+      GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "false"
+      GOTRUE_MAILER_OTP_EXP: "600"
+      GOTRUE_MAILER_OTP_LENGTH: "6"
+      GOTRUE_SMTP_MAX_FREQUENCY: "60s"
+      GOTRUE_RATE_LIMIT_EMAIL_SENT: "15"
+      GOTRUE_MAILER_TEMPLATES_CONFIRMATION: http://customer-api:5180/internal/email-template
+      GOTRUE_MAILER_TEMPLATES_MAGIC_LINK: http://customer-api:5180/internal/email-template

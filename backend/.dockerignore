@@ -1,0 +1,10 @@
+*
+!Dockerfile
+!package.json
+!package-lock.json
+!server.mjs
+!admin.mjs
+!admin-mail.mjs
+!validation.mjs
+!google-flow.mjs
+!otp.html

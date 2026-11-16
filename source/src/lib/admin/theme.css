@@ -1,0 +1,243 @@
+/* Admin black and gold palette. */
+#main-content.admin-route .admin-shell {
+  background: #111110;
+  color: #eee8da;
+}
+
+#main-content.admin-route .admin-shell > .sidebar {
+  background: #0c0c0b;
+  color: #eee8da;
+  border-right-color: #b78b243d;
+}
+
+#main-content.admin-route .sidebar .identity {
+  border-bottom-color: #b78b243d;
+}
+
+#main-content.admin-route .sidebar .identity-brand {
+  margin-right: -5px;
+  margin-left: -5px;
+  padding-right: 4px;
+  padding-left: 4px;
+  background: #fff;
+}
+
+#main-content.admin-route .sidebar .identity-logo {
+  width: 85%;
+  max-width: 100%;
+}
+
+#main-content.admin-route .sidebar .identity-label {
+  color: #c6a65b;
+}
+
+#main-content.admin-route .sidebar .sidebar-label {
+  display: block;
+  flex: none;
+  margin-top: auto;
+  padding: 12px 6px 14px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .2em;
+  text-align: center;
+}
+
+#main-content.admin-route .workspace {
+  background: radial-gradient(ellipse at 80% 0%, #b78b2414, transparent 52%), #151513;
+}
+
+#main-content.admin-route .sidebar .section-toggle {
+  border-color: #a9843e70;
+  background: linear-gradient(135deg, #332c1c, #211e17);
+  color: #ead6a1;
+  box-shadow: inset 0 1px #e6c77812, 0 4px 12px #0003;
+}
+
+#main-content.admin-route .sidebar .section-toggle:hover,
+#main-content.admin-route .sidebar .section-toggle.expanded {
+  border-color: #c49b45;
+  background: linear-gradient(135deg, #4c3c1d, #302717);
+}
+
+#main-content.admin-route .sidebar .subnav {
+  border-left-color: #b78b2466;
+}
+
+#main-content.admin-route .sidebar button.subitem {
+  border-color: #79633666;
+  background: #1c1b17;
+  color: #d5c9ac;
+}
+
+#main-content.admin-route .sidebar button.subitem:hover,
+#main-content.admin-route .sidebar button.subitem.active {
+  border-color: #b78b24;
+  background: #3a301c;
+  color: #f6e4b4;
+  box-shadow: inset 2px 0 #d0a64a;
+}
+
+#main-content.admin-route .admin-taskbar {
+  border-top-color: #b78b24;
+  background: #0b0b0a;
+  color: #e8dcc1;
+  box-shadow: 0 -10px 30px #0005;
+}
+
+#main-content.admin-route .admin-taskbar .taskbar-identity small {
+  color: #bfa262;
+}
+
+#main-content.admin-route .admin-taskbar .window-task,
+#main-content.admin-route .admin-taskbar .account-task {
+  border-color: #806832;
+  background: #242016;
+  color: #e5d4a9;
+}
+
+#main-content.admin-route .admin-taskbar .window-task:hover,
+#main-content.admin-route .admin-taskbar .account-task:hover {
+  background: #3c311b;
+  border-color: #c8a04b;
+}
+
+#main-content.admin-route .admin-taskbar .window-task.active {
+  border-color: #c7a04e;
+  background: #4a391a;
+  color: #fff0c9;
+  box-shadow: inset 0 -2px #d4ae58;
+}
+
+#main-content.admin-route .admin-taskbar .window-task.minimized {
+  background: #191814;
+  color: #b7a982;
+}
+
+#main-content.admin-route .admin-taskbar .window-marker {
+  background: #c6a354;
+}
+
+#main-content.admin-route .admin-window {
+  border-color: #776334;
+  background: #1c1b18;
+  color: #e9dfc7;
+  box-shadow: 0 22px 60px #0007;
+}
+
+#main-content.admin-route .admin-window.active {
+  border-color: #c7a04e;
+  box-shadow: 0 26px 70px #0009, 0 0 0 1px #b78b241f;
+}
+
+#main-content.admin-route .admin-window .titlebar {
+  border-bottom-color: #8e713a55;
+  background: #242119;
+}
+
+#main-content.admin-route .admin-window.active .titlebar {
+  background: linear-gradient(110deg, #3b301b, #252119);
+}
+
+#main-content.admin-route .admin-window .drag-handle,
+#main-content.admin-route .admin-window .window-controls button {
+  color: #e0c788;
+}
+
+#main-content.admin-route .admin-window .window-controls button {
+  border-left-color: #8e713a44;
+}
+
+#main-content.admin-route .admin-window .window-controls button:hover {
+  background: #55401e;
+}
+
+#main-content.admin-route .admin-window .window-controls .close:hover {
+  background: #7b2932;
+  color: #fff;
+}
+
+#main-content.admin-route .admin-window .window-body {
+  background: #1b1b18;
+}
+
+#main-content.admin-route .mobile-topbar {
+  border-bottom-color: #b78b243d;
+  background: #0c0c0b;
+  color: #e6d7b0;
+}
+
+#main-content.admin-route .mobile-topbar .menu-button {
+  border-color: #806832;
+  background: #292216;
+  color: #dfbf72;
+}
+
+#main-content.admin-route .admin-page {
+  background: radial-gradient(circle at 15% 10%, #b78b241c, transparent 40%), #111110;
+  color: #eee8da;
+}
+
+#main-content.admin-route .admin-eyebrow,
+#main-content.admin-route .admin-back {
+  color: #cfad61;
+}
+
+#main-content.admin-route .admin-intro p { color: #bfb49d; }
+#main-content.admin-route .admin-card { border-color: #9b7b3f; background: #f5f0e5; }
+#main-content.admin-route .admin-primary { background: linear-gradient(110deg, #8b661c, #b78b24); color: #fff8e8; }
+#main-content.admin-route button:focus-visible,
+#main-content.admin-route a:focus-visible { outline-color: #d7b25a; }
+
+/* Windows use the storefront's green and white palette. */
+#main-content.admin-route .admin-window {
+  border-color: #cddad5;
+  background: #fdfefd;
+  color: #1f3738;
+  box-shadow: 0 22px 55px #18352f27, 0 4px 14px #18352f13;
+}
+
+#main-content.admin-route .admin-window.active {
+  border-color: #80a899;
+  box-shadow: 0 26px 70px #18352f3b, 0 5px 18px #18352f1a;
+}
+
+#main-content.admin-route .admin-window .titlebar {
+  border-bottom-color: #dce5e1;
+  background: #f3f7f5;
+}
+
+#main-content.admin-route .admin-window.active .titlebar { background: #e8f2ed; }
+#main-content.admin-route .admin-window .drag-handle { color: #2a5145; }
+#main-content.admin-route .admin-window .window-controls button {
+  border-left-color: #dce5e1;
+  color: #49665d;
+}
+#main-content.admin-route .admin-window .window-controls button:hover { background: #dce9e2; }
+#main-content.admin-route .admin-window .window-controls .close:hover { background: #b44e50; color: #fff; }
+#main-content.admin-route .admin-window .window-body { background: #fdfefd; }
+
+#main-content.admin-route .admin-window .titlebar {
+  height: 32px;
+}
+
+#main-content.admin-route .admin-window .drag-handle {
+  gap: 8px;
+  padding: 0 10px;
+  cursor: default;
+}
+
+#main-content.admin-route .admin-window .drag-handle span {
+  font-size: 11px;
+}
+
+#main-content.admin-route .admin-window .window-controls button {
+  width: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+#main-content.admin-route .admin-window .window-controls .close:hover {
+  background: #c42b1c;
+  color: #fff;
+}

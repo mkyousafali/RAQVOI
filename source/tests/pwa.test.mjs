@@ -32,7 +32,7 @@ try {
   await page.getByLabel('Six-digit access code').fill('000000');
   await page.getByRole('button', { name: 'Enter preview' }).click();
   assert(await page.getByLabel('Six-digit access code').isVisible());
-  assert(await page.getByText('Incorrect code. Please try again.').isVisible());
+  await page.getByText('Incorrect code. Please try again.').waitFor();
   console.log('Coming-soon page, five-click reveal and error recovery: PASS');
   await page.getByLabel('Six-digit access code').fill(process.env.RAQVOI_PREVIEW_CODE);
   await page.getByRole('button', { name: 'Enter preview' }).click();

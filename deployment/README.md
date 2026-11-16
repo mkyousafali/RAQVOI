@@ -1,5 +1,60 @@
 # RAQVOI deployment and security
 
+## Gated HTTPS preview release (17 November 2026)
+
+The current frontend includes customer accounts, email/Google sign-in, and the
+separate Owner-controlled Admin window interface. The live customer API remains
+bound to VPS loopback; the preview gate forwards authorized customer/Admin API
+requests internally. Coming-soon visitors cannot access store pages, bundles or
+API endpoints without preview authorization. The single Google return endpoint
+is exempt from preview cookies and instead requires its single-use browser-bound
+PKCE flow. It commits a same-origin handoff page so Strict session cookies work.
+The external provider callback remains at `/__auth/callback`.
+
+Production APP_ORIGIN and the provider return allowlist use `https://raqvoi.com`.
+Preview, customer and Admin cookies are Secure and HttpOnly. The gate overwrites
+the internal client-address header used for production rate limits. No auth
+tokens, gate hash or private server configuration are included in the frontend.
+New preview codes and signing secrets are supplied privately at release time.
+The public release is still a gated preview: catalogue/orders remain demos and
+unresolved launch prerequisites below still apply. Existing customer/Admin data
+is preserved. Only the active release and one complete prior rollback are kept.
+
+`deploy-preview.py` captures frontend, gate, API and runtime rollback copies,
+saves a protected database backup and recreates only the changed services.
+Run public checks and mark the release verified before running retention cleanup.
+No database migrations are performed by this frontend release runner.
+
+## Customer authentication backend (16 November 2026; historical rollout)
+
+The live backend now includes email OTP authentication and `public.customer_profiles`,
+protected by RLS and a dedicated non-bypass database role. The customer API is published
+only on VPS loopback port 5180; local Vite reaches it through an SSH tunnel. No public
+API Caddy route or updated frontend has been deployed. Production preview gating remains.
+Supabase Auth uses the care mailbox SMTP and OTP templates served by the customer API.
+The extra `docker-compose.customer.yml` layer must be preserved in `COMPOSE_FILE`.
+Server credentials remain outside Git. See `backend/README.md` for operation and limitations.
+The earlier blank database/signup-disabled descriptions below describe the previous state.
+Only a clearly named test account/profile has been used; off-server backup and restore
+testing and child-account requirements remain prerequisites for public customer use.
+
+## Admin authentication backend (16 November 2026)
+
+The loopback-only API now has a separate password-plus-TOTP Admin login and one
+pending first-Admin membership for the verified owner. Setup requires a fresh
+customer session and then a separate password/TOTP sign-in. The protected Admin
+page and conditional account shortcut are local frontend changes only. No public
+frontend or API route changed. Admin management now includes email invitations,
+membership listing, invitation cancellation and access disabling. Migration 003
+adds forced-RLS invitation/audit tables and narrowly restricted server functions.
+Invitation recipients must prove email ownership and finish password/TOTP setup.
+Migration 005 protects a sole verified Owner and adds per-Admin section permissions.
+Only the Owner can change permissions or deactivate/reactivate other Admins.
+Frontend controls remain local; backend authorization uses current database rights.
+`public.admin_memberships` has forced RLS and a separate limited activation role.
+The migration was tested against a restored database copy and the live RLS/denial
+smoke checks passed. Protected database backups remain outside the web root.
+
 This guide is safe to publish. Credentials, access codes, private keys, token files and live environment files must remain outside Git. Machine-specific connection details are in the locally excluded root `AGENTS.md`.
 
 ## Current architecture
@@ -8,8 +63,8 @@ This guide is safe to publish. Credentials, access codes, private keys, token fi
 - `https://www.raqvoi.com`: redirects to the root domain.
 - `https://studio.raqvoi.com`: self-hosted Supabase gateway and password-protected Studio.
 - One VPS runs Docker Compose with Caddy for HTTPS and routing.
-- Supabase is initialized with its required system schemas. No application tables, users or storage buckets have been created.
-- Frontend commerce still uses browser-local demo state. It is not connected to Supabase and does not accept real payments.
+- Supabase has `customer_profiles` and `admin_memberships`; catalogue, order and storage features are still pending.
+- The live frontend commerce still uses browser-local demo state. It is not connected to Supabase and does not accept real payments.
 
 ## Security requirements for all future work
 
@@ -110,3 +165,7 @@ The gate allows anonymous GETs only for the manifest, service worker, two coming
 Verify locally with `node tests/pwa.test.mjs` from `source/`, supplying `RAQVOI_PREVIEW_CODE` in the process environment and optionally `RAQVOI_URL`/`RAQVOI_CHROME`. This checks actual Chromium installability in a temporary normal profile, brand loading, mobile overflow, worker control, session expiration and safe offline behavior. Do not commit the preview code or the temporary browser profile. Browser-managed installation itself is a user action.
 
 The coming-soon page hides the access form until the wordmark button is clicked five times (keyboard activation works too). This is a presentation choice, not authentication; code validation and session authorization remain server-side. Wrong-code responses reveal the form for retry. The small reveal script is authorized by an exact CSP hash, without unsafe-inline JavaScript.
+
+## Required release retention
+
+Keep only the active frontend/gate and one immediately previous rollback version. Before promoting a new release, capture the current frontend, gate modules and Compose override in the new release's `previous/` directory outside the web root. Once the new deployment is healthy and all live checks pass, run the repository's `deployment/prune-releases.py` on the VPS (installed at `/opt/raqvoi/bin/prune-releases.py`), passing the deployed commit identifier. It retains that release record and its `previous/`, removes older release directories and duplicate upload archives/gate staging copies. Do not keep an accumulating build history. Do not run cleanup before successful verification. Database, Storage and secret backups are separate from build retention and must not be removed by this script.

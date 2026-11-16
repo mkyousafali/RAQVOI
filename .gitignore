@@ -24,3 +24,7 @@ dist/
 *.backup
 *.tar.gz
 *.before-gate*
+__pycache__/
+*.pyc
+source/test-results/
+source/footer-check-*.png
